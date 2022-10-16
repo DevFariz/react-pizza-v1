@@ -8,21 +8,23 @@ import Categories from "../components/Categories";
 const Home = () => {
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [categoryId, setCategoryId] = useState(0);
 
   useEffect(() => {
-    fetch("https://634acbd933bb42dca40b7c93.mockapi.io/items")
+    setIsLoading(true);
+    fetch("https://634acbd933bb42dca40b7c93.mockapi.io/items?" + "category=" + categoryId)
       .then((res) => res.json())
       .then((arr) => {
         setItems(arr);
         setIsLoading(false);
       });
       window.scrollTo(0, 0);
-  }, []);
+  }, [categoryId]);
 
   return (
     <div className="container">
       <div className="content__top">
-        <Categories />
+        <Categories value={categoryId} onChangeCategory={(id) => setCategoryId(id)}/>
         <Sort />
       </div>
       <h2 className="content__title">Все пиццы</h2>
