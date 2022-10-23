@@ -1,4 +1,6 @@
 import { useState, useEffect, useContext } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { setCategoryId } from "../redux/slices/filterSlice.js";
 
 import { SearchContext } from "../App";
 import Sort from "../components/Sort";
@@ -8,25 +10,31 @@ import Categories from "../components/Categories";
 import Pagination from "../components/Pagination";
 
 const Home = () => {
-  const {searchValue} = useContext(SearchContext)
+  const dispatch = useDispatch();
+
+  const categoryId = useSelector((state) => state.filter.categoryId);
+  const sortType = useSelector((state) => state.filter.sortType.sortBy);
+
+  const { searchValue } = useContext(SearchContext);
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [categoryId, setCategoryId] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortType, setSortType] = useState({
-    name: "популярности (DESC)",
-    sortBy: "rating",
-  });
+
+  const onChangeCategory = (id) => {
+    dispatch(setCategoryId(id))
+  }
 
   useEffect(() => {
     setIsLoading(true);
 
     const category = categoryId > 0 ? `category=${categoryId}` : "";
-    const sortBy = sortType.sortBy.replace('-', '');
-    const order = sortType.sortBy.includes('-') ? 'asc' : 'desc';
-    const search = searchValue ? `&search=${searchValue}` : '';
+    const sortBy = sortType.replace("-", "");
+    const order = sortType.includes("-") ? "asc" : "desc";
+    const search = searchValue ? `&search=${searchValue}` : "";
 
-    fetch(`https://634acbd933bb42dca40b7c93.mockapi.io/items?page=${currentPage}&limit=${4}&${category}&sortBy=${sortBy}&order=${order}${search}`)
+    fetch(
+      `https://634acbd933bb42dca40b7c93.mockapi.io/items?page=${currentPage}&limit=${4}&${category}&sortBy=${sortBy}&order=${order}${search}`
+    )
       .then((res) => res.json())
       .then((arr) => {
         setItems(arr);
@@ -40,9 +48,9 @@ const Home = () => {
       <div className="content__top">
         <Categories
           value={categoryId}
-          onChangeCategory={(id) => setCategoryId(id)}
+          onChangeCategory={onChangeCategory}
         />
-        <Sort value={sortType} onChangeSort={setSortType} />
+        <Sort />
       </div>
       <h2 className="content__title">Все пиццы</h2>
       <div className="content__items">
@@ -50,7 +58,7 @@ const Home = () => {
           ? [...new Array(6)].map((_, i) => <Skeleton key={i} />)
           : items.map((pizza) => <PizzaBlock key={pizza.id} {...pizza} />)}
       </div>
-      <Pagination onPageChange={(number) => setCurrentPage(number)}/>
+      <Pagination onPageChange={(number) => setCurrentPage(number)} />
     </div>
   );
 };
