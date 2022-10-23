@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
-import { setCategoryId } from "../redux/slices/filterSlice.js";
+import { setCategoryId, setCurrentPage } from "../redux/slices/filterSlice.js";
 
 import { SearchContext } from "../App";
 import Sort from "../components/Sort";
@@ -15,15 +15,19 @@ const Home = () => {
 
   const categoryId = useSelector((state) => state.filter.categoryId);
   const sortType = useSelector((state) => state.filter.sortType.sortBy);
+  const currentPage = useSelector((state) => state.filter.currentPage);
 
   const { searchValue } = useContext(SearchContext);
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
 
   const onChangeCategory = (id) => {
     dispatch(setCategoryId(id));
   };
+
+  const onPageChange = num => {
+    dispatch(setCurrentPage(num))
+  }
 
   useEffect(() => {
     setIsLoading(true);
@@ -32,15 +36,6 @@ const Home = () => {
     const sortBy = sortType.replace("-", "");
     const order = sortType.includes("-") ? "asc" : "desc";
     const search = searchValue ? `&search=${searchValue}` : "";
-
-    // fetch(
-    //   `https://634acbd933bb42dca40b7c93.mockapi.io/items?page=${currentPage}&limit=${4}&${category}&sortBy=${sortBy}&order=${order}${search}`
-    // )
-    //   .then((res) => res.json())
-    //   .then((arr) => {
-    //     setItems(arr);
-    //     setIsLoading(false);
-    //   });
 
     axios
       .get(
@@ -66,7 +61,7 @@ const Home = () => {
           ? [...new Array(6)].map((_, i) => <Skeleton key={i} />)
           : items.map((pizza) => <PizzaBlock key={pizza.id} {...pizza} />)}
       </div>
-      <Pagination onPageChange={(number) => setCurrentPage(number)} />
+      <Pagination onPageChange={onPageChange} />
     </div>
   );
 };
