@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { setSortType } from "../redux/slices/filterSlice";
-
 
 const sortItems = [
   { name: "популярности (DESC)", sortBy: "rating" },
@@ -12,21 +11,34 @@ const sortItems = [
   { name: "алфавиту (ASC)", sortBy: "-alphabet" },
 ];
 
-
 const Sort = () => {
   const dispatch = useDispatch();
-  const sortType = useSelector(state => state.filter.sortType);
+  const sortType = useSelector((state) => state.filter.sortType);
+  const sortRef = useRef();
 
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
+  useEffect(() => {
+    const handleClickSort = (e) => {
+      if (!e.path.includes(sortRef.current)) {
+        setIsPopupOpen(false);
+      }
+    };
+
+    document.body.addEventListener("click", handleClickSort);
+
+    return () => {
+      document.body.removeEventListener("click", handleClickSort);
+    };
+  }, []);
 
   const onChangeActive = (obj) => {
-    dispatch(setSortType(obj))
+    dispatch(setSortType(obj));
     setIsPopupOpen(false);
   };
 
   return (
-    <div className="sort">
+    <div ref={sortRef} className="sort">
       <div className="sort__label">
         <svg
           width="10"
@@ -53,7 +65,9 @@ const Sort = () => {
                 <li
                   key={i}
                   onClick={() => onChangeActive(sortItem)}
-                  className={sortItem.sortBy === sortType.sortBy ? "active" : ""}
+                  className={
+                    sortItem.sortBy === sortType.sortBy ? "active" : ""
+                  }
                 >
                   {sortItem.name}
                 </li>
